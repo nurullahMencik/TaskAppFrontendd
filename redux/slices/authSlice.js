@@ -19,7 +19,7 @@ export const register = createAsyncThunk(
   'auth/register',
   async (userData, thunkAPI) => {
     try {
-      const response = await axios.post('https://taskappbackend-4kdw.onrender.com/api/auth/register', userData);
+      const response = await axios.post('https://taskappbackend-j2zj.onrender.com/api/auth/register', userData);
       if (response.data) {
         // Kayıt başarılıysa, otomatik olarak giriş yapıp token'ı kaydet
         // Bu işlem sadece tarayıcı ortamında çalışır
@@ -44,7 +44,7 @@ export const login = createAsyncThunk(
   'auth/login',
   async (userData, thunkAPI) => {
     try {
-      const response = await axios.post('https://taskappbackend-4kdw.onrender.com/api/auth/login', userData);
+      const response = await axios.post('https://taskappbackend-j2zj.onrender.com/api/auth/login', userData);
       if (response.data) {
         // Giriş başarılıysa, localStorage'a kaydet
         // Bu işlem sadece tarayıcı ortamında çalışır
