@@ -8,6 +8,7 @@ export default function Header() {
     const [isLoggedIn, setIsLoggedIn] = useState(false);
     const [userRole, setUserRole] = useState(null);
     const [username, setUsername] = useState('Kullanıcı');
+    const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false); // Manages mobile menu visibility
     const router = useRouter();
     const pathname = usePathname();
 
@@ -56,25 +57,39 @@ export default function Header() {
         setIsLoggedIn(false);
         setUserRole(null);
         setUsername('Kullanıcı');
+        setIsMobileMenuOpen(false); // Close mobile menu when logging out
         router.push('/login');
     };
 
+    const toggleMobileMenu = () => {
+        setIsMobileMenuOpen(!isMobileMenuOpen);
+    };
+
+    const closeMobileMenu = () => {
+        setIsMobileMenuOpen(false);
+    };
+
     return (
-        <header className="bg-gray-800 text-white p-4 shadow-md sticky top-0 z-50">
+        <header className="bg-gray-800 text-white p-4 shadow-lg sticky top-0 z-50">
             <nav className="container mx-auto flex justify-between items-center">
-                <Link href="/" className="text-2xl font-bold hover:text-gray-300 transition-colors">
+                {/* Brand/Logo */}
+                <Link href="/" className="text-2xl font-bold hover:text-blue-300 transition-colors duration-200">
                     Görev App
                 </Link>
 
-                <ul className="flex space-x-6 items-center">
-                    {/* Dashboard linkini her zaman görünür yapmak için buraya taşıdık */}
+                {/* Hamburger menu button for small screens */}
+                <div className="md:hidden">
+                    <button onClick={toggleMobileMenu} className="text-white hover:text-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 rounded-md p-2">
+                        <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d={isMobileMenuOpen ? "M6 18L18 6M6 6l12 12" : "M4 6h16M4 12h16M4 18h16"}></path>
+                        </svg>
+                    </button>
+                </div>
+
+                {/* Desktop Navigation Links */}
+                <ul className="hidden md:flex space-x-6 items-center">
                     <li>
-                        {/* Next.js App Router'da /dashboard yolu mu yoksa /routes/dashboard mı?
-                            Eğer dashboard sayfası /routes/dashboard altında ise, href'i '/routes/dashboard' yapmalısınız.
-                            Eğer root altında /dashboard ise, '/dashboard' kalabilir.
-                            Önceki konuşmalarımızda /routes/dashboard olarak ayarlamıştık, o yüzden onu kullanıyorum.
-                        */}
-                        <Link href="/dashboard" className={`hover:text-gray-300 transition-colors ${pathname === '/dashboard' ? 'font-bold text-blue-300' : ''}`}>
+                        <Link href="/dashboard" className={`hover:text-blue-300 transition-colors duration-200 ${pathname === '/dashboard' ? 'font-bold text-blue-400' : ''}`}>
                             Dashboard
                         </Link>
                     </li>
@@ -83,16 +98,18 @@ export default function Header() {
                         <>
                             {userRole === 'manager' && (
                                 <li>
-                                    {/* Manager'a özel linkler eklenebilir */}
+                                    <Link href="/admin" className={`hover:text-blue-300 transition-colors duration-200 ${pathname.startsWith('/admin') ? 'font-bold text-blue-400' : ''}`}>
+                                        Yönetici Paneli
+                                    </Link>
                                 </li>
                             )}
                             <li>
-                                <span className="text-gray-400">Merhaba, <span className="font-semibold">{username}</span></span>
+                                <span className="text-gray-300">Merhaba, <span className="font-semibold text-blue-200">{username}</span></span>
                             </li>
                             <li>
                                 <button
                                     onClick={handleLogout}
-                                    className="bg-red-600 hover:bg-red-700 text-white font-bold py-2 px-4 rounded-lg transition-colors"
+                                    className="bg-red-600 hover:bg-red-700 text-white font-bold py-2 px-4 rounded-lg transition-colors duration-200 shadow-md hover:shadow-lg"
                                 >
                                     Çıkış Yap
                                 </button>
@@ -101,12 +118,12 @@ export default function Header() {
                     ) : (
                         <>
                             <li>
-                                <Link href="/login" className={`hover:text-gray-300 transition-colors ${pathname === '/login' ? 'font-bold text-blue-300' : ''}`}>
+                                <Link href="/login" className={`hover:text-blue-300 transition-colors duration-200 ${pathname === '/login' ? 'font-bold text-blue-400' : ''}`}>
                                     Giriş Yap
                                 </Link>
                             </li>
                             <li>
-                                <Link href="/register" className={`hover:text-gray-300 transition-colors ${pathname === '/register' ? 'font-bold text-blue-300' : ''}`}>
+                                <Link href="/register" className={`bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-lg transition-colors duration-200 shadow-md hover:shadow-lg ${pathname === '/register' ? 'ring-2 ring-blue-300' : ''}`}>
                                     Kayıt Ol
                                 </Link>
                             </li>
@@ -114,6 +131,52 @@ export default function Header() {
                     )}
                 </ul>
             </nav>
+
+            {/* Mobile Menu - Shown when isMobileMenuOpen is true */}
+            <div className={`md:hidden ${isMobileMenuOpen ? 'block' : 'hidden'} bg-gray-700 mt-4 rounded-b-lg shadow-inner py-2`}>
+                <ul className="flex flex-col space-y-3 p-4">
+                    <li>
+                        <Link href="/dashboard" onClick={closeMobileMenu} className={`block py-2 px-3 rounded-md hover:bg-gray-600 transition-colors duration-200 ${pathname === '/dashboard' ? 'font-bold text-blue-300 bg-gray-600' : 'text-white'}`}>
+                            Dashboard
+                        </Link>
+                    </li>
+                    {isLoggedIn ? (
+                        <>
+                            {userRole === 'manager' && (
+                                <li>
+                                    <Link href="/admin" onClick={closeMobileMenu} className={`block py-2 px-3 rounded-md hover:bg-gray-600 transition-colors duration-200 ${pathname.startsWith('/admin') ? 'font-bold text-blue-300 bg-gray-600' : 'text-white'}`}>
+                                        Yönetici Paneli
+                                    </Link>
+                                </li>
+                            )}
+                            <li>
+                                <span className="block py-2 px-3 text-gray-300">Merhaba, <span className="font-semibold text-blue-200">{username}</span></span>
+                            </li>
+                            <li>
+                                <button
+                                    onClick={handleLogout}
+                                    className="w-full text-left bg-red-600 hover:bg-red-700 text-white font-bold py-2 px-3 rounded-md transition-colors duration-200 shadow-md"
+                                >
+                                    Çıkış Yap
+                                </button>
+                            </li>
+                        </>
+                    ) : (
+                        <>
+                            <li>
+                                <Link href="/login" onClick={closeMobileMenu} className={`block py-2 px-3 rounded-md hover:bg-gray-600 transition-colors duration-200 ${pathname === '/login' ? 'font-bold text-blue-300 bg-gray-600' : 'text-white'}`}>
+                                    Giriş Yap
+                                </Link>
+                            </li>
+                            <li>
+                                <Link href="/register" onClick={closeMobileMenu} className={`block w-full text-center bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-3 rounded-md transition-colors duration-200 shadow-md ${pathname === '/register' ? 'ring-2 ring-blue-300' : ''}`}>
+                                    Kayıt Ol
+                                </Link>
+                            </li>
+                        </>
+                    )}
+                </ul>
+            </div>
         </header>
     );
 }
