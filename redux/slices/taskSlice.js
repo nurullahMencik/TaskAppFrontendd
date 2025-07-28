@@ -8,7 +8,7 @@ export const createTask = createAsyncThunk(
   async ({ projectId, title, description, assignedTo, token }, thunkAPI) => {
     try {
       const response = await axios.post(
-        `https://taskappbackend-4kdw.onrender.com/api/projects/${projectId}/tasks`,
+        `https://taskappbackend-j2zj.onrender.com/api/projects/${projectId}/tasks`,
         { title, description, assignedTo: assignedTo || null },
         {
           headers: { Authorization: `Bearer ${token}` },
@@ -34,7 +34,7 @@ export const fetchTaskById = createAsyncThunk(
   'tasks/fetchTaskById',
   async ({ taskId, token }, thunkAPI) => {
     try {
-      const response = await axios.get(`https://taskappbackend-4kdw.onrender.com/api/tasks/${taskId}`, {
+      const response = await axios.get(`https://taskappbackend-j2zj.onrender.com/api/tasks/${taskId}`, {
         headers: { Authorization: `Bearer ${token}` },
       });
       return response.data;
@@ -57,7 +57,7 @@ export const updateTask = createAsyncThunk(
   'tasks/updateTask',
   async ({ taskId, updatedData, token }, thunkAPI) => {
     try {
-      const response = await axios.put(`https://taskappbackend-4kdw.onrender.com/api/tasks/${taskId}`, updatedData, {
+      const response = await axios.put(`https://taskappbackend-j2zj.onrender.com/api/tasks/${taskId}`, updatedData, {
         headers: { Authorization: `Bearer ${token}` },
       });
       return response.data;
@@ -80,7 +80,7 @@ export const fetchUsers = createAsyncThunk(
   'tasks/fetchUsers', // Users are fetched in the context of tasks
   async (token, thunkAPI) => {
     try {
-      const response = await axios.get('https://taskappbackend-4kdw.onrender.com/api/users', {
+      const response = await axios.get('https://taskappbackend-j2zj.onrender.com/api/users', {
         headers: { Authorization: `Bearer ${token}` },
       });
       return response.data;
