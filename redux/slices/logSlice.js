@@ -8,13 +8,13 @@ export const fetchTaskAndLogs = createAsyncThunk(
   async ({ taskId, token }, thunkAPI) => {
     try {
       // 1. Fetch task details
-      const taskRes = await axios.get(`https://taskappbackend-4kdw.onrender.com/api/tasks/${taskId}`, {
+      const taskRes = await axios.get(`https://taskappbackend-j2zj.onrender.com/api/tasks/${taskId}`, {
         headers: { Authorization: `Bearer ${token}` },
       });
       const task = taskRes.data;
 
       // 2. Fetch logs for the task
-      const logsRes = await axios.get(`https://taskappbackend-4kdw.onrender.com/api/logs/task/${taskId}`, {
+      const logsRes = await axios.get(`https://taskappbackend-j2zj.onrender.com/api/logs/task/${taskId}`, {
         headers: { Authorization: `Bearer ${token}` },
       });
       const logs = logsRes.data;
