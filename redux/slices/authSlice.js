@@ -2,8 +2,10 @@
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
 import axios from 'axios';
 
-// Başlangıç durumu tamamen sunucu-güvenli olmalı
+const API_BASE_URL = 'https://taskappbackend-j2zj.onrender.com/api';
+
 const initialState = {
+
   user: null, // Sunucuda başlangıçta null
   token: null, // Sunucuda başlangıçta null
   isLoading: false,
@@ -19,7 +21,7 @@ export const register = createAsyncThunk(
   'auth/register',
   async (userData, thunkAPI) => {
     try {
-      const response = await axios.post('https://taskappbackend-j2zj.onrender.com/api/auth/register', userData);
+      const response = await axios.post(`${API_BASE_URL}/auth/register`, userData);
       if (response.data) {
         // Kayıt başarılıysa, otomatik olarak giriş yapıp token'ı kaydet
         // Bu işlem sadece tarayıcı ortamında çalışır
@@ -44,7 +46,7 @@ export const login = createAsyncThunk(
   'auth/login',
   async (userData, thunkAPI) => {
     try {
-      const response = await axios.post('https://taskappbackend-j2zj.onrender.com/api/auth/login', userData);
+      const response = await axios.post(`${API_BASE_URL}/auth/login`, userData);
       if (response.data) {
         // Giriş başarılıysa, localStorage'a kaydet
         // Bu işlem sadece tarayıcı ortamında çalışır
