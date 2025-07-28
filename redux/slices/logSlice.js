@@ -2,19 +2,20 @@
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
 import axios from 'axios';
 
-// Async Thunk: Fetch task details and its associated logs
+const API_BASE_URL = 'https://taskappbackend-j2zj.onrender.com/api';
+
 export const fetchTaskAndLogs = createAsyncThunk(
   'logs/fetchTaskAndLogs',
   async ({ taskId, token }, thunkAPI) => {
     try {
       // 1. Fetch task details
-      const taskRes = await axios.get(`https://taskappbackend-j2zj.onrender.com/api/tasks/${taskId}`, {
+      const taskRes = await axios.get(`${API_BASE_URL}/tasks/${taskId}`, {
         headers: { Authorization: `Bearer ${token}` },
       });
       const task = taskRes.data;
 
       // 2. Fetch logs for the task
-      const logsRes = await axios.get(`https://taskappbackend-j2zj.onrender.com/api/logs/task/${taskId}`, {
+      const logsRes = await axios.get(`${API_BASE_URL}/logs/task/${taskId}`, {
         headers: { Authorization: `Bearer ${token}` },
       });
       const logs = logsRes.data;
