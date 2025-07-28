@@ -1,64 +1,57 @@
-// frontend/app/tasks/[id]/page.jsx
 'use client';
 
-import { useState, useEffect } from 'react';
-import axios from 'axios';
+import { useEffect } from 'react';
 import { useRouter, useParams } from 'next/navigation';
 import Link from 'next/link';
+import { useDispatch, useSelector } from 'react-redux';
+import { fetchTaskById, resetTaskState } from "./../../../../redux/slices/taskSlice"
 
 export default function TaskDetailsPage() {
-    const [task, setTask] = useState(null);
-    const [loading, setLoading] = useState(true);
-    const [error, setError] = useState('');
+    const dispatch = useDispatch();
     const router = useRouter();
     const params = useParams();
-    const taskId = params.id; // URL'den görev ID'sini alıyoruz
+    const taskId = params.id; // Get task ID from URL
+
+    // Select state from the Redux store
+    const { task, isLoading, isError, message } = useSelector(
+        (state) => state.task // Assuming your taskSlice is named 'tasks' in your Redux store configuration
+    );
 
     useEffect(() => {
-        const fetchTaskDetails = async () => {
-            const token = localStorage.getItem('token');
-            if (!token) {
-                router.push('/login');
-                return;
-            }
-            if (!taskId) {
-                setLoading(false);
-                return;
-            }
+        const token = localStorage.getItem('token');
+        if (!token) {
+            router.push('/login');
+            return;
+        }
+        if (!taskId) {
+            // If taskId is not yet available, do nothing. useEffect will re-run when it is.
+            return;
+        }
 
-            try {
-                // Backend'den görevi çek
-                const res = await axios.get(`http://localhost:5000/api/tasks/${taskId}`, {
-                    headers: { Authorization: `Bearer ${token}` }
-                });
-                setTask(res.data);
-            } catch (err) {
-                console.error('Görev detayları çekilirken hata oluştu:', err.response?.data?.message || err.message);
-                setError('Görev detayları yüklenirken bir sorun oluştu veya görev bulunamadı.');
-                if (err.response?.status === 401 || err.response?.status === 403 || err.response?.status === 404) {
-                    localStorage.removeItem('token');
-                    localStorage.removeItem('user');
-                    router.push('/login');
-                }
-            } finally {
-                setLoading(false);
-            }
+        dispatch(fetchTaskById({ taskId, token }));
+
+        // Cleanup: Reset task state when the component unmounts or taskId changes
+        return () => {
+            dispatch(resetTaskState());
         };
-
-        fetchTaskDetails();
-    }, [taskId, router]);
+    }, [taskId, router, dispatch]); // Add dispatch to the dependency array
 
     const getStatusText = (status) => {
         switch (status) {
-            case 'pending': return 'Beklemede';
-            case 'in-progress': return 'Devam Ediyor';
-            case 'completed': return 'Tamamlandı';
-            case 'blocked': return 'Engellendi';
-            default: return 'Bilinmiyor';
+            case 'pending':
+                return 'Beklemede';
+            case 'in-progress':
+                return 'Devam Ediyor';
+            case 'completed':
+                return 'Tamamlandı';
+            case 'blocked':
+                return 'Engellendi';
+            default:
+                return 'Bilinmiyor';
         }
     };
 
-    if (loading) {
+    if (isLoading) {
         return (
             <div className="min-h-screen flex items-center justify-center bg-gray-100">
                 <p className="text-xl text-gray-700">Yükleniyor...</p>
@@ -66,10 +59,10 @@ export default function TaskDetailsPage() {
         );
     }
 
-    if (error) {
+    if (isError) {
         return (
             <div className="min-h-screen flex items-center justify-center bg-gray-100">
-                <p className="text-red-500 text-xl">{error}</p>
+                <p className="text-red-500 text-xl">{message || 'Bir sorun oluştu.'}</p>
             </div>
         );
     }
@@ -102,7 +95,8 @@ export default function TaskDetailsPage() {
                     </div>
                     <div>
                         <p className="font-semibold">Proje:</p>
-                        <p>{task.project ? task.project.name : 'Yok'}</p>
+                        {/* Ensure task.project exists before trying to access its properties */}
+                        <p>{task.project ? task.project.title || task.project.name : 'Yok'}</p>
                     </div>
                     <div>
                         <p className="font-semibold">Oluşturulma Tarihi:</p>
@@ -117,10 +111,13 @@ export default function TaskDetailsPage() {
                     <Link href={`/tasks/${taskId}/edit`} className="bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded">
                         Görevi Düzenle
                     </Link>
-                    
-                    <Link href={`/projects/${task.project._id}`} className="bg-gray-500 hover:bg-gray-600 text-white font-bold py-2 px-4 rounded">
-                        Projeye Geri Dön
-                    </Link>
+
+                    {/* Check if task.project exists before trying to access its _id */}
+                    {task.project && (
+                        <Link href={`/projects/${task.project._id}`} className="bg-gray-500 hover:bg-gray-600 text-white font-bold py-2 px-4 rounded">
+                            Projeye Geri Dön
+                        </Link>
+                    )}
                 </div>
             </div>
         </div>
