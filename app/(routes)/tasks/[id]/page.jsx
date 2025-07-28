@@ -4,18 +4,15 @@ import { useEffect } from 'react';
 import { useRouter, useParams } from 'next/navigation';
 import Link from 'next/link';
 import { useDispatch, useSelector } from 'react-redux';
-import { fetchTaskById, resetTaskState } from "./../../../../redux/slices/taskSlice"
+import { fetchTaskById, resetTaskState } from './../../../../redux/slices/taskSlice';
 
 export default function TaskDetailsPage() {
     const dispatch = useDispatch();
     const router = useRouter();
     const params = useParams();
-    const taskId = params.id; // Get task ID from URL
+    const taskId = params.id;
 
-    // Select state from the Redux store
-    const { task, isLoading, isError, message } = useSelector(
-        (state) => state.task // Assuming your taskSlice is named 'tasks' in your Redux store configuration
-    );
+    const { task, isLoading, isError, message } = useSelector(state => state.task);
 
     useEffect(() => {
         const token = localStorage.getItem('token');
@@ -23,31 +20,23 @@ export default function TaskDetailsPage() {
             router.push('/login');
             return;
         }
-        if (!taskId) {
-            // If taskId is not yet available, do nothing. useEffect will re-run when it is.
-            return;
-        }
+
+        if (!taskId) return;
 
         dispatch(fetchTaskById({ taskId, token }));
 
-        // Cleanup: Reset task state when the component unmounts or taskId changes
         return () => {
             dispatch(resetTaskState());
         };
-    }, [taskId, router, dispatch]); // Add dispatch to the dependency array
+    }, [taskId, router, dispatch]);
 
     const getStatusText = (status) => {
         switch (status) {
-            case 'pending':
-                return 'Beklemede';
-            case 'in-progress':
-                return 'Devam Ediyor';
-            case 'completed':
-                return 'Tamamlandı';
-            case 'blocked':
-                return 'Engellendi';
-            default:
-                return 'Bilinmiyor';
+            case 'pending': return 'Beklemede';
+            case 'in-progress': return 'Devam Ediyor';
+            case 'completed': return 'Tamamlandı';
+            case 'blocked': return 'Engellendi';
+            default: return 'Bilinmiyor';
         }
     };
 
@@ -91,12 +80,11 @@ export default function TaskDetailsPage() {
                     </div>
                     <div>
                         <p className="font-semibold">Atanan Kişi:</p>
-                        <p>{task.assignedTo ? task.assignedTo.username : 'Atanmadı'}</p>
+                        <p>{task.assignedTo?.username || 'Atanmadı'}</p>
                     </div>
                     <div>
                         <p className="font-semibold">Proje:</p>
-                        {/* Ensure task.project exists before trying to access its properties */}
-                        <p>{task.project ? task.project.title || task.project.name : 'Yok'}</p>
+                        <p>{task.project?.title || task.project?.name || 'Yok'}</p>
                     </div>
                     <div>
                         <p className="font-semibold">Oluşturulma Tarihi:</p>
@@ -108,13 +96,17 @@ export default function TaskDetailsPage() {
                     </div>
                 </div>
                 <div className="flex justify-end space-x-4">
-                    <Link href={`/tasks/${taskId}/edit`} className="bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded">
+                    <Link
+                        href={`/tasks/${taskId}/edit`}
+                        className="bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded"
+                    >
                         Görevi Düzenle
                     </Link>
-
-                    {/* Check if task.project exists before trying to access its _id */}
                     {task.project && (
-                        <Link href={`/projects/${task.project._id}`} className="bg-gray-500 hover:bg-gray-600 text-white font-bold py-2 px-4 rounded">
+                        <Link
+                            href={`/projects/${task.project._id}`}
+                            className="bg-gray-500 hover:bg-gray-600 text-white font-bold py-2 px-4 rounded"
+                        >
                             Projeye Geri Dön
                         </Link>
                     )}
