@@ -8,7 +8,7 @@ export const createProject = createAsyncThunk(
   async ({ title, description, token }, thunkAPI) => {
     try {
       const response = await axios.post(
-        'https://taskappbackend-4kdw.onrender.com/api/projects',
+        'https://taskappbackend-j2zj.onrender.com/api/projects',
         { title, description },
         {
           headers: {
@@ -39,7 +39,7 @@ export const fetchProjectById = createAsyncThunk(
   'projects/fetchProjectById',
   async ({ projectId, token }, thunkAPI) => {
     try {
-      const response = await axios.get(`https://taskappbackend-4kdw.onrender.com/api/projects/${projectId}`, {
+      const response = await axios.get(`https://taskappbackend-j2zj.onrender.com/api/projects/${projectId}`, {
         headers: {
           Authorization: `Bearer ${token}`,
         },
@@ -72,7 +72,7 @@ export const updateProject = createAsyncThunk(
   async ({ projectId, title, description, token }, thunkAPI) => {
     try {
       const response = await axios.put(
-        `https://taskappbackend-4kdw.onrender.com/api/projects/${projectId}`,
+        `https://taskappbackend-j2zj.onrender.com/api/projects/${projectId}`,
         { title, description },
         {
           headers: {
@@ -103,7 +103,7 @@ export const fetchProjects = createAsyncThunk(
   'projects/fetchProjects',
   async (token, thunkAPI) => {
     try {
-      const response = await axios.get('https://taskappbackend-4kdw.onrender.com/api/projects', {
+      const response = await axios.get('https://taskappbackend-j2zj.onrender.com/api/projects', {
         headers: {
           Authorization: `Bearer ${token}`,
         },
@@ -131,7 +131,7 @@ export const deleteProject = createAsyncThunk(
   'projects/deleteProject',
   async ({ projectId, token }, thunkAPI) => {
     try {
-      await axios.delete(`https://taskappbackend-4kdw.onrender.com/api/projects/${projectId}`, {
+      await axios.delete(`https://taskappbackend-j2zj.onrender.com/api/projects/${projectId}`, {
         headers: {
           Authorization: `Bearer ${token}`,
         },
