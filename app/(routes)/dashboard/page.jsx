@@ -1,141 +1,138 @@
-// frontend/app/dashboard/page.jsx
 'use client';
-
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { useDispatch, useSelector } from 'react-redux';
-// Proje işlemleri için projectsSlice'tan gerekli thunk'ları ve action'ları import ediyoruz
 import { fetchProjects, deleteProject, resetProjectState, clearMessages } from "./../../../redux/slices/projectsSlice";
-// Auth işlemleri için authSlice'tan logout thunk'ını import ediyoruz
 import { logout } from "./../../../redux/slices/authSlice";
 
 export default function DashboardPage() {
-    // Projeler artık Redux state'inden gelecek, yerel state'e gerek yok
-    // const [projects, setProjects] = useState([]);
-    // Loading ve error durumları da Redux state'inden yönetilecek
-    // const [loading, setLoading] = useState(true);
-    // const [error, setError] = useState('');
-
-    // UI ile ilgili yerel state'ler korunuyor
-    const [showConfirmModal, setShowConfirmModal] = useState(false); // Onay modalı için state
-    const [projectIdToDelete, setProjectIdToDelete] = useState(null); // Silinecek proje ID'si için state
-    const [showMessageBox, setShowMessageBox] = useState(false); // Mesaj kutusu için state
-    const [messageBoxContent, setMessageBoxContent] = useState(''); // Mesaj kutusu içeriği
-    const [messageBoxType, setMessageBoxType] = useState('success'); // Mesaj kutusu tipi (success/error)
+    const [showConfirmModal, setShowConfirmModal] = useState(false);
+    const [projectIdToDelete, setProjectIdToDelete] = useState(null);
+    const [showMessageBox, setShowMessageBox] = useState(false); 
+    const [messageBoxContent, setMessageBoxContent] = useState(''); 
+    const [messageBoxType, setMessageBoxType] = useState('success'); 
 
     const router = useRouter();
     const dispatch = useDispatch();
 
-    // Redux store'dan projectsSlice'ın state'ini çekiyoruz
     const { projects, isLoading, isError, message, isSuccess } = useSelector(
-        (state) => state.project // store'unuzda projectsSlice'ı 'projects' anahtarı altında tanımladığınızı varsayıyoruz
+        (state) => state.project 
     );
 
     // Mesaj kutusunu göstermek için yardımcı fonksiyon
     const showMessage = (content, type = 'success') => {
         setMessageBoxContent(content);
-        setMessageBoxType(type);
+        setMessageBoxType(type); // Şimdi bu bir fonksiyon
         setShowMessageBox(true);
         setTimeout(() => {
             setShowMessageBox(false);
             setMessageBoxContent('');
-            dispatch(clearMessages()); // Mesaj kutusu kapandığında Redux mesajını da temizle
-        }, 3000); // 3 saniye sonra otomatik kapanır
+            dispatch(clearMessages()); 
+        }, 3000); 
     };
 
     // Projeleri çekmek için useEffect
     useEffect(() => {
-        const token = localStorage.getItem('token');
+        const token = typeof window !== 'undefined' ? localStorage.getItem('token') : null; 
         if (!token) {
-            router.push('/login'); // Token yoksa login sayfasına yönlendir
+            router.push('/login'); 
             return;
         }
-        dispatch(fetchProjects(token)); // Tüm projeleri çekmek için fetchProjects thunk'ını dispatch et
+        dispatch(fetchProjects(token)); 
 
-        // Component unmount olduğunda veya token değiştiğinde Redux state'ini temizle
         return () => {
             dispatch(resetProjectState());
         };
-    }, [router, dispatch]); // router ve dispatch bağımlılık olarak eklendi
+    }, [router, dispatch]); 
 
     // Redux state'indeki başarı/hata mesajlarını dinlemek ve UI'da göstermek için useEffect
     useEffect(() => {
         if (isSuccess && message) {
-            // Sadece başarılı proje işlemleri için (yükleme, silme, oluşturma/güncelleme)
             if (message.includes('silindi') || message.includes('yüklendi') || message.includes('oluşturuldu') || message.includes('güncellendi')) {
                 showMessage(message, 'success');
             }
         }
         if (isError && message) {
             showMessage(message, 'error');
-            // Kimlik doğrulama hatası durumunda kullanıcıyı login sayfasına yönlendir
             if (message.includes('Unauthorized') || message.includes('Forbidden') || message.includes('token')) {
-                localStorage.removeItem('token');
-                localStorage.removeItem('user');
-                router.push('/login');
+                typeof window !== 'undefined' && localStorage.removeItem('token');
+                typeof window !== 'undefined' && localStorage.removeItem('user');
+                setTimeout(() => { 
+                    router.push('/login');
+                }, 2000);
             }
         }
-    }, [isSuccess, isError, message, router, dispatch]); // dispatch'i de bağımlılıklara ekledik
+    }, [isSuccess, isError, message, router, dispatch]);
 
-    // Proje silme onay modalını tetikleyen fonksiyon
     const handleDeleteClick = (projectId) => {
         setProjectIdToDelete(projectId);
-        setShowConfirmModal(true); // Onay modalını göster
+        setShowConfirmModal(true); 
     };
 
-    // Proje silme işlemini onaylayan ve thunk'ı dispatch eden fonksiyon
-    const confirmDelete = async () => {
-        setShowConfirmModal(false); // Onay modalını kapat
-        if (!projectIdToDelete) return; // Silinecek proje ID'si yoksa çık
+    const confirmDelete = () => {
+        setShowConfirmModal(false); 
+        if (!projectIdToDelete) return; 
 
-        const token = localStorage.getItem('token');
+        const token = typeof window !== 'undefined' ? localStorage.getItem('token') : null;
         if (!token) {
-            router.push('/login'); // Token yoksa login sayfasına yönlendir
+            router.push('/login'); 
             return;
         }
-        // deleteProject thunk'ını dispatch et
         dispatch(deleteProject({ projectId: projectIdToDelete, token }));
-        setProjectIdToDelete(null); // Silme işlemini sıfırla
+        setProjectIdToDelete(null); 
     };
 
-    // Proje silme işlemini iptal eden fonksiyon
     const cancelDelete = () => {
         setShowConfirmModal(false);
         setProjectIdToDelete(null);
     };
 
-    // Çıkış yapma fonksiyonu, authSlice'taki logout thunk'ını kullanır
     const handleLogout = () => {
-        dispatch(logout()); // Redux logout thunk'unu dispatch et
-        router.push('/login'); // Çıkış sonrası giriş sayfasına yönlendir
+        dispatch(logout()); 
+        router.push('/login'); 
     };
 
     // Yükleme durumu gösterimi
-    // isLoading true ise ve henüz hiç proje yüklenmemişse (projects dizisi boşsa) yükleniyor mesajı göster
     if (isLoading && projects.length === 0) {
         return (
             <div className="min-h-screen flex items-center justify-center bg-gray-100">
-                <p className="text-xl text-gray-700">Projeler yükleniyor...</p>
+                <div className="flex flex-col items-center text-gray-700">
+                    <div className="animate-spin rounded-full h-12 w-12 border-4 border-t-4 border-blue-500 border-gray-200 mb-4"></div> {/* Basit spinner */}
+                    <p className="text-xl">Projeler yükleniyor...</p>
+                </div>
             </div>
         );
     }
 
-    // Yükleme bittiğinde (isLoading false) ve hata varsa (isError true) ve proje listesi boşsa hata mesajı göster
+    // Yükleme bittiğinde (isLoading false) ve (isError true) ve proje listesi boşsa hata mesajı göster
     if (!isLoading && isError && projects.length === 0) {
         return (
             <div className="min-h-screen flex items-center justify-center bg-gray-100">
-                <p className="text-xl text-red-500">{message || 'Projeleri yüklerken bir sorun oluştu.'}</p>
+                <div className="flex flex-col items-center text-red-600 p-4 text-center">
+                    <p className="text-2xl font-bold mb-4">Hata!</p>
+                    <p className="text-xl">{message || 'Projeleri yüklerken bir sorun oluştu. Lütfen daha sonra tekrar deneyin.'}</p>
+                    <button
+                        onClick={() => {
+                            const token = typeof window !== 'undefined' ? localStorage.getItem('token') : null;
+                            dispatch(fetchProjects(token)); 
+                        }}
+                        className="mt-6 bg-red-500 text-white px-6 py-3 rounded-lg shadow-md hover:bg-red-600 transition duration-200 font-semibold"
+                    >
+                        Tekrar Dene
+                    </button>
+                </div>
             </div>
         );
     }
 
     return (
-        <div className="min-h-screen bg-gray-100 p-8 font-sans">
+        <div className="min-h-screen bg-gray-50 flex flex-col">
             {/* Mesaj Kutusu bileşeni */}
             {showMessageBox && (
-                <div className={`fixed top-4 right-4 p-4 rounded-lg shadow-lg text-white z-50
-                    ${messageBoxType === 'success' ? 'bg-green-500' : 'bg-red-500'}`}
+                <div className={`fixed top-4 right-4 p-4 rounded-lg shadow-lg text-white z-50 transform transition-all duration-300 ${
+                    messageBoxType === 'success' ? 'bg-green-600' : 'bg-red-600'
+                } animate-fade-in-right`}
                 >
                     {messageBoxContent}
                 </div>
@@ -143,20 +140,21 @@ export default function DashboardPage() {
 
             {/* Onay Modalı bileşeni */}
             {showConfirmModal && (
-                <div className="fixed inset-0 bg-gray-600 bg-opacity-50 flex items-center justify-center z-50">
-                    <div className="bg-white p-6 rounded-lg shadow-xl max-w-sm w-full text-center">
-                        <h3 className="text-xl font-semibold mb-4 text-gray-800">Projeyi Silmek İstiyor Musunuz?</h3>
+                <div className="fixed inset-0 bg-gray-900 bg-opacity-75 flex items-center justify-center z-50 animate-fade-in">
+                    <div className="bg-white p-6 rounded-lg shadow-xl max-w-sm w-full text-center transform scale-95 animate-scale-in">
+                        <span className="text-red-500 text-5xl mb-5 block">⚠️</span> 
+                        <h3 className="text-xl font-bold mb-3 text-gray-800">Projeyi Silmek İstiyor Musunuz?</h3>
                         <p className="text-gray-600 mb-6">Bu işlem geri alınamaz.</p>
                         <div className="flex justify-center space-x-4">
                             <button
                                 onClick={confirmDelete}
-                                className="bg-red-500 hover:bg-red-600 text-white font-bold py-2 px-4 rounded-lg transition duration-200"
+                                className="bg-red-600 hover:bg-red-700 text-white font-bold py-2 px-4 rounded-lg shadow-md hover:shadow-lg transition duration-200"
                             >
                                 Sil
                             </button>
                             <button
                                 onClick={cancelDelete}
-                                className="bg-gray-300 hover:bg-gray-400 text-gray-800 font-bold py-2 px-4 rounded-lg transition duration-200"
+                                className="bg-gray-300 hover:bg-gray-400 text-gray-800 font-bold py-2 px-4 rounded-lg shadow-md hover:shadow-lg transition duration-200"
                             >
                                 İptal
                             </button>
@@ -165,54 +163,78 @@ export default function DashboardPage() {
                 </div>
             )}
 
-            {/* Sayfa başlığı ve aksiyon düğmeleri */}
-            <div className="flex justify-between items-center mb-6 bg-white p-4 rounded-lg shadow-md">
-                <h1 className="text-4xl font-bold text-gray-800">Projelerim</h1>
-                <div className="flex items-center space-x-4">
-                    <Link href="/create-project" className="bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded-lg transition duration-200">
+            {/* Sabit Header Bölümü */}
+            <header className="sticky top-0 z-40 bg-white shadow-lg p-4 sm:px-8 flex justify-between items-center flex-wrap gap-4">
+                <Link href="/dashboard" className="flex items-center text-blue-700 hover:text-blue-900 transition duration-200">
+                    <span className="text-blue-500 text-3xl mr-3">📊</span> 
+                    <h1 className="text-3xl font-extrabold text-gray-800">Projelerim</h1>
+                </Link>
+                
+                <div className="flex items-center space-x-3 sm:space-x-4">
+                    <Link href="/create-project" 
+                        className="flex items-center bg-blue-500 hover:bg-blue-600 text-white font-semibold py-2.5 px-5 rounded-lg shadow-md hover:shadow-lg transition-all duration-300 transform hover:-translate-y-0.5 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:ring-offset-2">
+                        <span>➕</span> 
                         Yeni Proje Oluştur
                     </Link>
                     <button
                         onClick={handleLogout}
-                        className="bg-red-500 hover:bg-red-600 text-white font-bold py-2 px-4 rounded-lg transition duration-200"
+                        className="flex items-center bg-red-500 hover:bg-red-600 text-white font-semibold py-2.5 px-5 rounded-lg shadow-md hover:shadow-lg transition-all duration-300 transform hover:-translate-y-0.5 focus:outline-none focus:ring-2 focus:ring-red-400 focus:ring-offset-2"
                     >
+                        <span>➡️</span> 
                         Çıkış Yap
                     </button>
                 </div>
-            </div>
+            </header>
 
-            {/* Proje listesi veya "Henüz hiç proje oluşturmadınız" mesajı */}
-            {projects.length === 0 && !isLoading ? ( // isLoading false olduğunda ve proje yoksa bu mesajı göster
-                <p className="text-center text-gray-600 text-lg mt-10">Henüz hiç proje oluşturmadınız.</p>
-            ) : (
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                    {projects.map(project => (
-                        <div key={project._id} className="bg-white p-6 rounded-lg shadow-md hover:shadow-lg transition-shadow duration-300">
-                            {/* Backend'den gelen veriye göre project.title veya project.name kullanabiliriz */}
-                            <h2 className="text-2xl font-semibold text-gray-800 mb-2">{project.title || project.name}</h2>
-                            <p className="text-gray-600 mb-4">{project.description}</p>
-                            {/* Proje sahibi bilgisi varsa göster */}
-                            {project.owner && (
-                                <p className="text-gray-500 text-sm">Oluşturan: {project.owner.username || project.owner.email}</p>
-                            )}
-                            <div className="mt-4 flex justify-end space-x-2">
-                                <Link href={`/projects/${project._id}`} className="bg-gray-200 hover:bg-gray-300 text-gray-800 font-bold py-2 px-3 rounded-lg text-sm transition duration-200">
-                                    Detaylar
-                                </Link>
-                                <Link href={`/edit-project/${project._id}`} className="bg-yellow-500 hover:bg-yellow-600 text-white font-bold py-2 px-3 rounded-lg text-sm transition duration-200">
-                                    Düzenle
-                                </Link>
-                                <button
-                                    onClick={() => handleDeleteClick(project._id)}
-                                    className="bg-red-500 hover:bg-red-600 text-white font-bold py-2 px-3 rounded-lg text-sm transition duration-200"
-                                >
-                                    Sil
-                                </button>
+            {/* Ana İçerik Alanı */}
+            <main className="flex-1 p-6 sm:p-8">
+                {projects.length === 0 && !isLoading && !isError ? ( 
+                    <div className="flex flex-col items-center justify-center h-[calc(100vh-180px)] text-gray-600">
+                        <span className="text-gray-400 text-7xl mb-6">📂</span> 
+                        <p className="text-2xl font-semibold mb-4">Henüz hiç proje oluşturmadınız.</p>
+                        <p className="text-lg mb-8 text-center max-w-md">
+                            İlk projenizi oluşturarak görev yönetimine başlayın ve işlerinizi kolayca takip edin!
+                        </p>
+                        <Link href="/create-project" 
+                            className="bg-green-500 hover:bg-green-600 text-white font-bold py-3 px-8 rounded-lg shadow-lg hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1 focus:outline-none focus:ring-2 focus:ring-green-400 focus:ring-offset-2">
+                            <span>➕</span> 
+                            İlk Projeyi Oluştur
+                        </Link>
+                    </div>
+                ) : (
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 xl:gap-8">
+                        {projects.map(project => (
+                            <div key={project._id} className="bg-white p-6 rounded-xl shadow-lg hover:shadow-xl transform hover:-translate-y-1 transition-all duration-300 border border-gray-100">
+                                <h2 className="text-2xl font-bold text-gray-800 mb-3 leading-tight">{project.title || project.name}</h2>
+                                <p className="text-gray-600 text-sm mb-4 line-clamp-3">{project.description}</p>
+                                
+                                {project.owner && project.owner.username && (
+                                    <p className="text-gray-500 text-xs font-medium mb-4">
+                                        Oluşturan: <span className="text-gray-700">{project.owner.username}</span>
+                                    </p>
+                                )}
+                                
+                                <div className="mt-5 pt-4 border-t border-gray-100 flex justify-end space-x-3">
+                                    <Link href={`/projects/${project._id}`} 
+                                        className="flex items-center bg-gray-100 hover:bg-gray-200 text-gray-700 font-semibold py-2 px-4 rounded-lg text-sm transition duration-200">
+                                        <span>👁️</span> Detaylar 
+                                    </Link>
+                                    <Link href={`/edit-project/${project._id}`} 
+                                        className="flex items-center bg-yellow-100 hover:bg-yellow-200 text-yellow-700 font-semibold py-2 px-4 rounded-lg text-sm transition duration-200">
+                                        <span>✍️</span> Düzenle 
+                                    </Link>
+                                    <button
+                                        onClick={() => handleDeleteClick(project._id)}
+                                        className="flex items-center bg-red-100 hover:bg-red-200 text-red-700 font-semibold py-2 px-4 rounded-lg text-sm transition duration-200"
+                                    >
+                                        <span>🗑️</span> Sil 
+                                    </button>
+                                </div>
                             </div>
-                        </div>
-                    ))}
-                </div>
-            )}
+                        ))}
+                    </div>
+                )}
+            </main>
         </div>
     );
 }
