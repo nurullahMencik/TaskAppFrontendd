@@ -1,9 +1,7 @@
-
-import { API_BASE_URL } from './../../constans/index';
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
 import axios from 'axios';
 
-
+const API_BASE_URL = "https://taskappbackend-j2zj.onrender.com/api"
 
 export const fetchTaskAndLogs = createAsyncThunk(
   'logs/fetchTaskAndLogs',
