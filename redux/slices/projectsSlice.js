@@ -1,10 +1,9 @@
+import { API_BASE_URL } from '@/constans';
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
 import axios from 'axios';
 
-// Base URL for your API
-const API_BASE_URL = 'https://taskappbackend-j2zj.onrender.com/api';
 
-// Helper function for handling common error and token removal logic
+
 const handleApiError = (error, thunkAPI) => {
     const message =
         (error.response &&
@@ -16,13 +15,12 @@ const handleApiError = (error, thunkAPI) => {
     if (error.response?.status === 401 || error.response?.status === 403) {
         localStorage.removeItem('token');
         localStorage.removeItem('user');
-        // You might want to dispatch a logout action here if you have one
-        // thunkAPI.dispatch(logout());
+
     }
     return thunkAPI.rejectWithValue(message);
 };
 
-// Async Thunk for creating a project
+
 export const createProject = createAsyncThunk(
     'projects/createProject',
     async ({ title, description, token }, thunkAPI) => {
@@ -43,7 +41,7 @@ export const createProject = createAsyncThunk(
     }
 );
 
-// Async Thunk: Fetch a single project by ID
+
 export const fetchProjectById = createAsyncThunk(
     'projects/fetchProjectById',
     async ({ projectId, token }, thunkAPI) => {
@@ -53,7 +51,7 @@ export const fetchProjectById = createAsyncThunk(
                     Authorization: `Bearer ${token}`,
                 },
             });
-            // Ensure consistency in the returned data structure if 'name' vs 'title' varies
+        
             return {
                 id: response.data._id,
                 title: response.data.name || response.data.title,
@@ -66,7 +64,7 @@ export const fetchProjectById = createAsyncThunk(
     }
 );
 
-// Async Thunk: Update an existing project
+
 export const updateProject = createAsyncThunk(
     'projects/updateProject',
     async ({ projectId, title, description, token }, thunkAPI) => {
@@ -87,7 +85,7 @@ export const updateProject = createAsyncThunk(
     }
 );
 
-// Async Thunk: Fetch all projects
+
 export const fetchProjects = createAsyncThunk(
     'projects/fetchProjects',
     async (token, thunkAPI) => {
@@ -104,7 +102,7 @@ export const fetchProjects = createAsyncThunk(
     }
 );
 
-// Async Thunk: Delete a project
+
 export const deleteProject = createAsyncThunk(
     'projects/deleteProject',
     async ({ projectId, token }, thunkAPI) => {
@@ -114,14 +112,14 @@ export const deleteProject = createAsyncThunk(
                     Authorization: `Bearer ${token}`,
                 },
             });
-            return projectId; // Return the ID of the deleted project
+            return projectId; 
         } catch (error) {
             return handleApiError(error, thunkAPI);
         }
     }
 );
 
-// NEW Async Thunk: Fetch tasks for a specific project
+
 export const fetchProjectTasks = createAsyncThunk(
     'projects/fetchProjectTasks',
     async ({ projectId, token }, thunkAPI) => {
@@ -138,7 +136,7 @@ export const fetchProjectTasks = createAsyncThunk(
     }
 );
 
-// NEW Async Thunk: Delete a task
+
 export const deleteTask = createAsyncThunk(
     'projects/deleteTask',
     async ({ taskId, token }, thunkAPI) => {
@@ -153,7 +151,7 @@ export const deleteTask = createAsyncThunk(
     }
 );
 
-// NEW Async Thunk: Update a task's status
+
 export const updateTaskStatus = createAsyncThunk(
     'projects/updateTaskStatus',
     async ({ taskId, nextStatus, token }, thunkAPI) => {
@@ -163,7 +161,7 @@ export const updateTaskStatus = createAsyncThunk(
                 { status: nextStatus },
                 { headers: { Authorization: `Bearer ${token}` } }
             );
-            return response.data; // Return the updated task data
+            return response.data; 
         } catch (error) {
             return handleApiError(error, thunkAPI);
         }
@@ -172,9 +170,9 @@ export const updateTaskStatus = createAsyncThunk(
 
 
 const initialState = {
-    project: null, // Stores the single project data (for fetch/edit)
-    projects: [], // Stores the list of all projects
-    tasks: [], // NEW: Stores tasks for the currently viewed project
+    project: null, 
+    projects: [], 
+    tasks: [], 
     isLoading: false,
     isSuccess: false,
     isError: false,
@@ -191,7 +189,7 @@ export const projectsSlice = createSlice({
             state.isError = false;
             state.message = '';
             state.project = null;
-            state.tasks = []; // Clear tasks as well
+            state.tasks = []; 
         },
         clearMessages: (state) => {
             state.isSuccess = false;
@@ -204,7 +202,7 @@ export const projectsSlice = createSlice({
     },
     extraReducers: (builder) => {
         builder
-            // Cases for createProject
+
             .addCase(createProject.pending, (state) => {
                 state.isLoading = true;
                 state.isError = false;
@@ -224,14 +222,14 @@ export const projectsSlice = createSlice({
                 state.message = action.payload;
                 state.project = null;
             })
-            // Cases for fetchProjectById
+
             .addCase(fetchProjectById.pending, (state) => {
                 state.isLoading = true;
                 state.isError = false;
                 state.isSuccess = false;
                 state.message = '';
                 state.project = null;
-                state.tasks = []; // Clear tasks when fetching a new project
+                state.tasks = []; 
             })
             .addCase(fetchProjectById.fulfilled, (state, action) => {
                 state.isLoading = false;
@@ -246,7 +244,7 @@ export const projectsSlice = createSlice({
                 state.project = null;
                 state.tasks = [];
             })
-            // Cases for updateProject
+  
             .addCase(updateProject.pending, (state) => {
                 state.isLoading = true;
                 state.isError = false;
@@ -268,7 +266,7 @@ export const projectsSlice = createSlice({
                 state.isError = true;
                 state.message = action.payload;
             })
-            // Cases for fetchProjects (all projects)
+
             .addCase(fetchProjects.pending, (state) => {
                 state.isLoading = true;
                 state.isError = false;
@@ -288,7 +286,7 @@ export const projectsSlice = createSlice({
                 state.message = action.payload;
                 state.projects = [];
             })
-            // Cases for deleteProject
+
             .addCase(deleteProject.pending, (state) => {
                 state.isLoading = true;
                 state.isError = false;
@@ -306,7 +304,7 @@ export const projectsSlice = createSlice({
                 state.isError = true;
                 state.message = action.payload;
             })
-            // NEW: Cases for fetchProjectTasks
+  
             .addCase(fetchProjectTasks.pending, (state) => {
                 state.isLoading = true;
                 state.isError = false;
@@ -326,7 +324,7 @@ export const projectsSlice = createSlice({
                 state.message = action.payload;
                 state.tasks = [];
             })
-            // NEW: Cases for deleteTask
+
             .addCase(deleteTask.pending, (state) => {
                 state.isLoading = true;
                 state.isError = false;
@@ -344,7 +342,7 @@ export const projectsSlice = createSlice({
                 state.isError = true;
                 state.message = action.payload;
             })
-            // NEW: Cases for updateTaskStatus
+
             .addCase(updateTaskStatus.pending, (state) => {
                 state.isLoading = true;
                 state.isError = false;
@@ -355,7 +353,7 @@ export const projectsSlice = createSlice({
                 state.isLoading = false;
                 state.isSuccess = true;
                 state.message = 'Görev durumu başarıyla güncellendi.';
-                // Find and update the task in the tasks array
+
                 state.tasks = state.tasks.map(task =>
                     task._id === action.payload._id ? action.payload : task
                 );
