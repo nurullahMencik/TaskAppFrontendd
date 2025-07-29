@@ -1,20 +1,20 @@
-// frontend/redux/slices/authSlice.js
+
+import { API_BASE_URL } from '@/constans';
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
 import axios from 'axios';
 
-const API_BASE_URL = 'https://taskappbackend-j2zj.onrender.com/api';
+
 
 const initialState = {
 
-  user: null, // Sunucuda başlangıçta null
-  token: null, // Sunucuda başlangıçta null
+  user: null, 
+  token: null, 
   isLoading: false,
   isSuccess: false,
   isError: false,
   message: '',
 };
 
-// Asenkron Thunk'lar (API çağrıları ve localStorage yüklemesi için)
 
 // Kullanıcı Kaydı
 export const register = createAsyncThunk(
@@ -24,7 +24,6 @@ export const register = createAsyncThunk(
       const response = await axios.post(`${API_BASE_URL}/auth/register`, userData);
       if (response.data) {
         // Kayıt başarılıysa, otomatik olarak giriş yapıp token'ı kaydet
-        // Bu işlem sadece tarayıcı ortamında çalışır
         if (typeof window !== 'undefined') {
             localStorage.setItem('user', JSON.stringify(response.data.user));
             localStorage.setItem('token', response.data.token);
@@ -49,7 +48,7 @@ export const login = createAsyncThunk(
       const response = await axios.post(`${API_BASE_URL}/auth/login`, userData);
       if (response.data) {
         // Giriş başarılıysa, localStorage'a kaydet
-        // Bu işlem sadece tarayıcı ortamında çalışır
+
         if (typeof window !== 'undefined') {
             localStorage.setItem('user', JSON.stringify(response.data.user));
             localStorage.setItem('token', response.data.token);
@@ -70,7 +69,6 @@ export const login = createAsyncThunk(
 export const logout = createAsyncThunk(
   'auth/logout',
   async () => {
-    // Bu işlem sadece tarayıcı ortamında çalışır
     if (typeof window !== 'undefined') {
         localStorage.removeItem('user');
         localStorage.removeItem('token');
@@ -82,7 +80,7 @@ export const logout = createAsyncThunk(
 export const loadUserFromLocalStorage = createAsyncThunk(
   'auth/loadUserFromLocalStorage',
   async (_, thunkAPI) => {
-    // Bu işlem sadece tarayıcı ortamında çalışır
+
     if (typeof window !== 'undefined') {
       try {
         const storedUser = localStorage.getItem('user') ? JSON.parse(localStorage.getItem('user')) : null;
@@ -91,9 +89,9 @@ export const loadUserFromLocalStorage = createAsyncThunk(
         if (storedUser && storedToken) {
           return { user: storedUser, token: storedToken };
         }
-        return { user: null, token: null }; // Yoksa boş dön
+        return { user: null, token: null }; // 
       } catch (e) {
-        // JSON parse hatası veya başka bir localStorage hatası durumunda
+       
         console.error("Failed to load user from localStorage:", e);
         return { user: null, token: null };
       }
@@ -113,7 +111,7 @@ export const authSlice = createSlice({
       state.isError = false;
       state.message = '';
     },
-    // setAuthData reducer'ına artık ihtiyacımız yok çünkü loadUserFromLocalStorage thunk'ı bunu yönetecek.
+    
   },
   extraReducers: (builder) => {
     builder
@@ -157,13 +155,12 @@ export const authSlice = createSlice({
         state.token = null;
         state.isSuccess = false;
       })
-      // YENİ THUNK'ın durumları (loadUserFromLocalStorage)
-      // loadUserFromLocalStorage tamamlandığında state'i güncelle
+ 
       .addCase(loadUserFromLocalStorage.fulfilled, (state, action) => {
         state.user = action.payload.user;
         state.token = action.payload.token;
       })
-      // loadUserFromLocalStorage reddedildiğinde veya hata aldığında state'i sıfırla
+      
       .addCase(loadUserFromLocalStorage.rejected, (state) => {
         state.user = null;
         state.token = null;
@@ -171,5 +168,6 @@ export const authSlice = createSlice({
   },
 });
 
-export const { reset } = authSlice.actions; // reset action'ını dışa aktar
-export default authSlice.reducer; // Reducer'ı dışa aktar
+export const { reset } = authSlice.actions; 
+export default authSlice.reducer; 
+
