@@ -1,26 +1,27 @@
-// frontend/redux/slices/logSlice.js
+
+import { API_BASE_URL } from '@/constans';
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
 import axios from 'axios';
 
-const API_BASE_URL = 'https://taskappbackend-j2zj.onrender.com/api';
+
 
 export const fetchTaskAndLogs = createAsyncThunk(
   'logs/fetchTaskAndLogs',
   async ({ taskId, token }, thunkAPI) => {
     try {
-      // 1. Fetch task details
+
       const taskRes = await axios.get(`${API_BASE_URL}/tasks/${taskId}`, {
         headers: { Authorization: `Bearer ${token}` },
       });
       const task = taskRes.data;
 
-      // 2. Fetch logs for the task
+
       const logsRes = await axios.get(`${API_BASE_URL}/logs/task/${taskId}`, {
         headers: { Authorization: `Bearer ${token}` },
       });
       const logs = logsRes.data;
 
-      // Return both task and logs data
+  
       return { task, logs };
     } catch (error) {
       const message =
@@ -37,8 +38,8 @@ export const fetchTaskAndLogs = createAsyncThunk(
 );
 
 const initialState = {
-  task: null, // Stores the fetched task details
-  logs: [], // Stores the fetched logs for the task
+  task: null, 
+  logs: [], 
   isLoading: false,
   isSuccess: false,
   isError: false,
@@ -46,7 +47,7 @@ const initialState = {
 };
 
 export const logSlice = createSlice({
-  name: 'logs', // Slice adı 'logs'
+  name: 'logs',
   initialState,
   reducers: {
     resetLogState: (state) => {
@@ -65,7 +66,7 @@ export const logSlice = createSlice({
   },
   extraReducers: (builder) => {
     builder
-      // Cases for fetchTaskAndLogs
+      
       .addCase(fetchTaskAndLogs.pending, (state) => {
         state.isLoading = true;
         state.isError = false;
