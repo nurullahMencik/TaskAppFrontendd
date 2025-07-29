@@ -11,7 +11,7 @@ export default function RegisterPage() {
         username: '',
         email: '',
         password: '',
-        role: 'developer', // Varsayılan rol
+        role: 'manager', // Varsayılan rol
     });
 
     const { username, email, password, role } = formData;
