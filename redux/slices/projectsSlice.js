@@ -1,4 +1,4 @@
-import { API_BASE_URL } from '@/constans';
+import { API_BASE_URL } from './../../constans/index';
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
 import axios from 'axios';
 
